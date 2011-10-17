@@ -12,18 +12,19 @@
 #include "avgdctscaled.h"
 #include "avgdctpacked.h"
 #include "closure.h"
+#include "bitpack.h"
 
 #define DENOM 255
 
-static void applyCompPrint(int col, int row, A2 array, A2Methods_Object* ptr,
+static void applyCompPrint(int col, int row, A2 array, void* ptr,
                 void* cl) {
-    (void) col; (void) row; (void) array; (void) cl;
-    
-    
-    //struct AvgDCTScaled* elem = ptr;
-
-    //fprintf(stdout, "%u %u %u %d %d %d ", elem->pb, elem->pr, elem->a,
-    //                                   elem->b, elem->c, elem->d);
+    (void) row; (void) col; (void) array; (void) cl;
+    uint64_t* packedWord = ptr;
+    uint64_t word = *packedWord;
+    for(int bit = 24; bit >= 0; bit -= 8) {
+        int section = Bitpack_getu(word, 8, bit);
+        putchar((char)section);
+    }
 }
 
 static void compWrite(A2 array, A2Methods_T methods) {
@@ -39,16 +40,7 @@ void compress40(FILE *input) {
     assert(methods);
     A2Methods_mapfun *map = methods->map_default;
     assert(map);
-    #define SET_METHODS(METHODS,MAP,WHAT) do {\
-        methods = (METHODS); \
-        assert(methods); \
-        map = methods->MAP; \
-        if(!map) { \
-            frprintf(stderr, "%s does not support " WHAT " mapping\n", \
-            argv[0]); \
-            exit(1); \
-        } \
-    } while(0)
+
     Pnm_ppm image;
     TRY
         image = Pnm_ppmread(input, methods);
@@ -117,17 +109,16 @@ static void fillToReadArray(int col, int row, A2 array, A2Methods_Object* ptr,
     (void) col; (void) row; (void) array;
     FILE* input = cl;
 
-    struct AvgDCTScaled* curpix = ptr;
-    struct AvgDCTScaled elem;
+    uint64_t* curpix = ptr;
+    uint64_t word;
 
-    fscanf(input, "%u", &elem.pb);
-    fscanf(input, "%u", &elem.pr);
-    fscanf(input, "%u", &elem.a);
-    fscanf(input, "%d", &elem.b);
-    fscanf(input, "%d", &elem.c);
-    fscanf(input, "%d", &elem.d);
+    for(int bit = 24; bit >= 0; bit -= 8) {
+        int c = getc(input);
+        word = Bitpack_newu(word, 8, bit, c);
+    }
 
-    *curpix = elem;
+    //printf("curpix: %lu\n", word);
+    *curpix = word;
 }
 
 void decompress40(FILE *input) {
@@ -135,16 +126,7 @@ void decompress40(FILE *input) {
     assert(methods);
     A2Methods_mapfun *map = methods->map_default;
     assert(map);
-    #define SET_METHODS(METHODS,MAP,WHAT) do {\
-        methods = (METHODS); \
-        assert(methods); \
-        map = methods->MAP; \
-        if(!map) { \
-            frprintf(stderr, "%s does not support " WHAT " mapping\n", \
-            argv[0]); \
-            exit(1); \
-        } \
-    } while(0)
+
     unsigned height, width;
     int read = fscanf(input, "COMP40 Compressed image format 2\n%u %u", &width,
         &height);
@@ -152,6 +134,7 @@ void decompress40(FILE *input) {
     int c = getc(input);
     assert(c == '\n');
 
+    A2 avgDCTPacked = methods->new(width, height, sizeof(uint64_t));
     A2 avgDCTScaled = methods->new(width, height, sizeof(struct AvgDCTScaled));
     A2 avgDCTArray = methods->new(width, height, sizeof(struct AvgDCT));
 
@@ -162,13 +145,14 @@ void decompress40(FILE *input) {
     A2 floatArray = methods->new(width, height, sizeof(struct rgbFloat));
     A2 intArray = methods->new(width, height, sizeof(struct Pnm_rgb));
 
-    /* filling arrays from input */
-    methods->map_default(avgDCTScaled, fillToReadArray, input);
+    /* filling array from input */
+    methods->map_default(avgDCTPacked, fillToReadArray, input);
 
     /* creating closures used to fill empty arrays */
-    struct Closure cl = { methods, avgDCTScaled, DENOM };
-
-    //cl.array = avgDCTScaled;
+    struct Closure cl = { methods, avgDCTPacked, DENOM };
+    methods->map_default(avgDCTScaled, applyDecompToAvgDCTScaled, &cl);
+    
+    cl.array = avgDCTScaled;
     methods->map_default(avgDCTArray, applyDecompToAvgDCT, &cl);
 
     cl.array = avgDCTArray;
@@ -196,5 +180,6 @@ void decompress40(FILE *input) {
     methods->free(&yppArray);
     methods->free(&avgDCTArray);
     methods->free(&avgDCTScaled);
+    methods->free(&avgDCTPacked);
     Pnm_ppmfree(&output);
 }

@@ -15,15 +15,15 @@ void applyCompToAvgDCTPacked(int col, int row, A2 toBeFilled,
     struct Closure* mycl = cl;
     struct AvgDCTScaled* original = mycl->methods->at(mycl->array, col, row);
     uint64_t word;
-    
+   
     word = Bitpack_newu(word, 9, 23, original->a);
     word = Bitpack_news(word, 5, 18, original->b);
     word = Bitpack_news(word, 5, 13, original->c);
     word = Bitpack_news(word, 5, 8, original->d);
     word = Bitpack_newu(word, 4, 4, original->pb);
     word = Bitpack_newu(word, 4, 0, original->pr);
-    
-    toBeSet = &word; 
+   
+    *toBeSet = word;
 }
 
 /*
