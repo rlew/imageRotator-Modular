@@ -3,6 +3,10 @@
 #include "assert.h"
 #include "closure.h"
 
+/* 
+ * Compression: trimming the outer pixel rows and columns to make dimensions
+ * even 
+ */
 void compTrimPixmap(Pnm_ppm image) {
     if(image->width % 2 != 0) {
       image->width -= 1;
@@ -11,8 +15,10 @@ void compTrimPixmap(Pnm_ppm image) {
       image->height -= 1;
     }
 }
-/* Compression: void *ptr is a struct of rgbFloat's to be filled with the
- * calculations preformed on the Pnm_rgb array in the closure. */
+/* 
+ * Compression: void *ptr is a struct of rgbFloat's to be filled with the
+ * calculations performed on the Pnm_rgb array in the closure. 
+ */
 void applyCompToRGBFloat(int col, int row, A2 toBeFilled,
                                 void* ptr, void* cl) {
     (void) toBeFilled;
@@ -25,6 +31,10 @@ void applyCompToRGBFloat(int col, int row, A2 toBeFilled,
     toBeSet->blue = ((float)original->blue) / denom;
 }
 
+/*
+ * Decompression: void *ptr is a struct of RGB integers to be filled with the
+ * calculations performed on the rgbFloat array in the closure 
+ */
 void applyDecompToRGBInt(int col, int row, A2 toBeFilled,
                                                 void* ptr, void* cl) {
     (void) toBeFilled;
@@ -32,12 +42,19 @@ void applyDecompToRGBInt(int col, int row, A2 toBeFilled,
     struct Pnm_rgb* decomped = ptr;
     struct rgbFloat* original = mycl->methods->at(mycl->array,col, row);
     unsigned int  denominator = mycl->denom;
-    //assert(original->red <= 1.0);
-    //assert(original->green<= 1.0);
-    //assert(original->blue <= 1.0);
+    
+    // Checking boundary conditions to prevent negative RGB values
+    if(original->red < 0) original->red = 0;
+    if(original->green < 0) original->green = 0;
+    if(original->blue < 0) original->blue = 0;
+    
     decomped->red = original->red * denominator;
     decomped->green = original->green * denominator;
     decomped->blue = original->blue * denominator;
+    
+    if(decomped->red > 255) decomped->red = 255;
+    if(decomped->green > 255) decomped->green = 255;
+    if(decomped->blue > 255) decomped->blue = 255;
 }
 
 

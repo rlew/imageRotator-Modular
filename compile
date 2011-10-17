@@ -48,7 +48,8 @@ esac
 
 case $link in
 all|40image) gcc $FLAGS $LFLAGS -o 40image 40image.o compress40.o bitpack.o \
-              rgbFloat.o ypp.o avgdct.o avgdctscaled.o a2plain.o uarray2.o \
+              rgbFloat.o ypp.o avgdct.o avgdctscaled.o avgdctpacked.o \
+              a2plain.o uarray2.o \
               $LIBS
 
               linked=yes ;;

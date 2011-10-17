@@ -1,3 +1,4 @@
+#include "stdlib.h"
 #include "stdint.h"
 #include "stdbool.h"
 #include "stdio.h"
@@ -21,9 +22,22 @@ int main(int argc, char* argv[])
     unsigned long temp = ~7;
     fprintf(stderr, "%lu\n", ~temp); 
 
-    uint64_t tofill;
-    uint64_t i = Bitpack_newu(tofill, 3, 0, 1);
-    printf("1 stored in 0th bit: %lu\n", Bitpack_getu(i, 3, 0));
+    uint64_t width = atoi(argv[1]);
+    uint64_t lsb = atoi(argv[2]);
+    //uint64_t value = atoi(argv[3]);
+    /*uint64_t unsignedValue;
+    printf("%lu %lu %lu\n", width, lsb, value);
+    uint64_t i = Bitpack_newu(unsignedValue, width, lsb, value);
+    printf("%lu stored in %lu bit: %lu\n", value, lsb,
+            Bitpack_getu(i, width, lsb));
+*/
+    int64_t signedValue;
+    //unsigned u = 20;
+    int u = -20;
+    uint64_t j = Bitpack_news(signedValue, width, lsb, u);
+    printf("%d stored in %ld bit: %ld\n", u, lsb,
+            Bitpack_gets(j, width, lsb));
+
 
     return 0;
 }

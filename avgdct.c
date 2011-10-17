@@ -4,8 +4,10 @@
 #include "assert.h"
 #include "closure.h"
 
-/* Compression: void *ptr is a struct of AvgDCT to be filled with the
- * calculations performed on the YPP array in the closure */
+/* 
+ * Compression: void *ptr is a struct of AvgDCT to be filled with the
+ * calculations performed on the YPP array in the closure 
+ */
 void applyCompToAvgDCT(int col, int row, A2 toBeFilled, void* ptr,
     void* cl) {
     (void) toBeFilled;
@@ -31,8 +33,10 @@ void applyCompToAvgDCT(int col, int row, A2 toBeFilled, void* ptr,
 }
 
 
-/* Decompression: void *ptr is a struct of YPP to be filled with the
- * calculations performed on the AvgDCT array in the closure. */
+/* 
+ * Decompression: void *ptr is a struct of YPP to be filled with the
+ * calculations performed on the AvgDCT array in the closure. 
+ */
 void applyDecompToYPP(int col, int row, A2 toBeFilled,
                                                     void* ptr, void* cl) {
     (void) toBeFilled;
