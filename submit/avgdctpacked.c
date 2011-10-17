@@ -5,7 +5,7 @@
 #include "avgdctscaled.h"
 
 /*
- * Compression: void *ptr is an element of the AvgDCTPacked array that is
+ * Compression: void *ptr is an 32-bit codeword in the AvgDCTPacked array that is
  * being filled by the AvgDCTScaled element from the closure.
  */
 void applyCompToAvgDCTPacked(int col, int row, A2 toBeFilled,
@@ -15,20 +15,20 @@ void applyCompToAvgDCTPacked(int col, int row, A2 toBeFilled,
     struct Closure* mycl = cl;
     struct AvgDCTScaled* original = mycl->methods->at(mycl->array, col, row);
     uint64_t word;
-   
+
     word = Bitpack_newu(word, 9, 23, original->a);
     word = Bitpack_news(word, 5, 18, original->b);
     word = Bitpack_news(word, 5, 13, original->c);
     word = Bitpack_news(word, 5, 8, original->d);
     word = Bitpack_newu(word, 4, 4, original->pb);
     word = Bitpack_newu(word, 4, 0, original->pr);
-   
+
     *toBeSet = word;
 }
 
 /*
  * Decompression: void *ptr is an element of the AvgDCTScaled array that is
- * being filled by the AvgDCTPacked element from the closure.
+ * being filled by the AvgDCTPacked 32-bit codeword from the closure.
  */
 void applyDecompToAvgDCTScaled(int col, int row,
                                 A2 toBeFilled, void* ptr, void* cl){

@@ -1,20 +1,48 @@
 COMP40 - ASIGNMENT 4 - INTEGER AND LOGICAL OPERATIONS
 
-By:                     
+By:
+
         Rachel Lew
         Trevor John
 
 Collaborators:
+
         TA's:     Marshall, Amanda, Adrienne, Hawk, Josh, Greg, and Jesse
+                  Note that Jesse provided excellent help in theoretical
+                  understanding of bit-pack.
                   Prof. Ramsey (via email)
-        Students: Nick Chen and Max Smiley
+        Students: Nick Chen and Max Smiley contributed to our compile script
+                  developement and helped locate pixel wrapping.
+
+Time Management:
+
+        Analysizing the problem: 5 hours.
+        Solving the problem:     25 hours.
 
 Functionality:
+
         All specifications have been sucessfully implemented. No extra credit
         was attempted.
 
-Architecture:
-    
-Implementations:
+        Implementation opperates under the assumption that the minimum image
+        size is a 2 pixel by 2 pixel image. Anything smaller is a checked
+        runtime error.
 
-Interfaces:
+Architecture:
+
+        The application uses the given 40image.c to execute the main function
+        and handle the input of the image file and determine whether compression
+        or decompression should be implemented. compress40.h contains the
+        function prototypes necessary for the compression or decompression
+        Each stage of compression and decompression are stored in seperate .c
+        files that contain inverse functions (see table below).
+
+                            Stage:
+        File Name (.*)  |   Compression / Decompression
+        rgbFloat        |   Integers / Floats
+        ypp             |   Floats / Video component color space
+        avgdct          |   Video component color space / average video component of
+                                                            2x2 block of pixels
+        avgdctscaled    |   2x2 block average / Scaled integers
+        avgdctpacked    |   Scaled integers / Integers packed into 32-bit word
+
